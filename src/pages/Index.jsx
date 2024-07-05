@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink } from "lucide-react";
+import { debounce } from "lodash";
 
 const fetchTopStories = async () => {
   const response = await fetch(
@@ -28,6 +29,15 @@ const Index = () => {
     queryFn: fetchTopStories,
   });
 
+  const debouncedSearch = useCallback(
+    debounce((value) => setSearchTerm(value), 300),
+    []
+  );
+
+  const handleSearchChange = (e) => {
+    debouncedSearch(e.target.value);
+  };
+
   const filteredStories = stories?.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -41,8 +51,7 @@ const Index = () => {
       <Input
         type="text"
         placeholder="Search stories..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={handleSearchChange}
         className="mb-4"
       />
       {isLoading ? (
